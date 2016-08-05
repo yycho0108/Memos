@@ -1,0 +1,67 @@
+//
+   Created by jamiecho on 8/5/16.
+
+mixin inputFormat(type,name,value)
+    tr
+        th
+            p=name
+        td
+            input(type=type,name=name,value=value)
+
+html(lang="en")
+    head
+        title Memos-Upload
+
+        script(src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js")
+        script(lang="javascript").
+
+            function addRow() {
+
+                var tr = $("<tr>").addClass("form-row");
+
+                var field = $("<input type=text>");
+                var value = $("<input type=text>");
+
+                var btn = $('<button type="button">').text("Set").click(function () {
+                    var field_text = field.val();
+
+                    var field_p = $("<span>").text(field_text);
+                    field.replaceWith(field_p);
+
+                    value.attr('name', field_text);
+
+                    $(this).remove();
+                });
+
+                var field_div = $("<div>").append(field, btn);
+
+                var th = $("<th>").append(field_div);
+                var td = $("<td>").append(value);
+
+                var del = $('<button type="button">').text("Del").click(function(){
+                    tr.remove();
+                })
+
+                tr.append(th, td, del);
+                $("#add-row").before(tr);
+            }
+
+            $(function () {
+
+            });
+
+body
+    div
+        form(method="POST", enctype="multipart/form-data")
+            table(id="form-table")
+                tr(class='form-row')
+                    th
+                        p='title'
+                    td
+                        input(type='text' name='title')
+                tr(id='add-row')
+                    td(colspan=2)
+                        button(type="button", onclick="addRow()")='ADD ROW'
+                tr(id='submit')
+                    td(colspan=2)
+                        input(type='submit',name='SUBMIT',value='Submit')
