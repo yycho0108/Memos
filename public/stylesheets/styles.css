@@ -1,0 +1,13 @@
+div.tag{
+    margin-right : 10px;
+    float : left;
+    background-color: aliceblue;
+    border: thin solid grey;
+    border-radius: 5px;
+}
+
+button.cancel{
+    background : none;
+    border : none;
+    vertical-align: middle;
+}

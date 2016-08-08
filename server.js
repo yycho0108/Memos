@@ -10,18 +10,18 @@ var path = require('path');
 var session = require('express-session');
 
 /* FOR NOW, LOAD ENVIRONMENT VARIABLES LIKE THIS*/
-var env = fs.readFileSync('.env', {encoding: 'UTF8', flag: 'r'});
-var vars = env.split('\n');
-for (i in vars) {
-    if (vars[i]) {
-        var entry = vars[i].split('=');
-        var field = entry[0];
-        var value = entry[1];
-        if (field && value) {
-            process.env[field] = value;
-        }
-    }
-}
+//var env = fs.readFileSync('.env', {encoding: 'UTF8', flag: 'r'});
+//var vars = env.split('\n');
+//for (i in vars) {
+//    if (vars[i]) {
+//        var entry = vars[i].split('=');
+//        var field = entry[0];
+//        var value = entry[1];
+//        if (field && value) {
+//            process.env[field] = value;
+//        }
+//    }
+//}
 
 var tmp_dir = path.join(__dirname, 'tmp');
 var public_dir = path.join(__dirname, 'public');
@@ -55,10 +55,10 @@ app.set('view engine', 'jade');
 
 var AWS = require("aws-sdk");
 AWS.config.update({
-    accessKeyId: "NONE",//process.env.AWS_ACCESS_KEY,
-    secretAccessKey: "NONE",//process.env.AWS_SECRET_ACCESS_KEY,
-    region: "us-east",
-    endpoint: "http://localhost:8000"
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: "us-east-1",
+    endpoint: process.env.ENDPOINT 
 });
 
 var dynamodb = new AWS.DynamoDB();

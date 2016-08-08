@@ -1,0 +1,65 @@
+//
+   Created by jamiecho on 8/6/16.
+
+html(lang="en")
+    head
+        title Memos-Query
+
+        link(rel="stylesheet" type="text/css" href="stylesheets/styles.css")
+        script(src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js")
+        script(lang="javascript").
+            $(function () {
+                $("#add").click(function () {
+                    $("input.tag").each(function () {
+                        var $this = $(this);
+                        var val = $this.val();
+                        var tag = $('<div class="tag">');
+                        var check = $('<input type="checkbox" checked>')
+                                .attr("name", val)
+                                .val("tag");
+
+                        var text = $('<span>').text(val);
+
+                        var cancel = $('<button type="button" class="cancel">').click(function () {
+                            tag.remove();
+                        }).text('x');
+
+                        tag.append(check, text, cancel);
+                        $this.parent().replaceWith(tag);
+                    });
+
+                    var new_tag = $('<div class="tag">');
+                    var tag_text = $('<input type="text" class="tag"/>');
+
+                    new_tag.append(tag_text);
+                    $(this).before(new_tag);
+                });
+            })
+
+body
+    div
+        form(method="POST", enctype="multipart/form-data")
+            table
+                tr
+                    th
+                        p='title'
+                    td
+                        input(type='text' name='title')
+                tr
+                    th
+                        p='date'
+                    td
+                        input(type='datetime-local' name='date')
+                        select
+                            option(value="search all") search all
+                            option(value="search before") search before
+                            option(value="search after") search after
+                tr
+                    th
+                        p='tag'
+                    td(id="tags" style="float:left")
+                        div(class="add")
+                            button(id="add" type="button")='+'
+                tr
+                    td(colspan=2)
+                        input(type='submit',name='SUBMIT',value='Submit')

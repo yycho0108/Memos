@@ -1,0 +1,32 @@
+{
+  "name": "Memos",
+  "version": "1.0.0",
+  "description": "Web Application tied with Amazon DynamoDB and Heroku,",
+  "main": "server.js",
+  "dependencies": {
+    "async": "^2.0.0-rc.6",
+    "aws-sdk": "^2.4.6",
+    "body-parser": "^1.14.1",
+    "cookie-parser": "^1.4.0",
+    "express": "^4.13.3",
+    "express-session": "*",
+    "formidable": "^1.0.17",
+    "jade": "*",
+    "jquery": "^2.1.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yycho0108/Memos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yycho0108/Memos/issues"
+  },
+  "homepage": "https://github.com/yycho0108/Memos#readme"
+}
