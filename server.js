@@ -64,38 +64,10 @@ AWS.config.update({
 var dynamodb = new AWS.DynamoDB();
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-
-// CREATE TABLE
-
-/*var params = {
- TableName : "Movies",
- KeySchema: [
- { AttributeName: "year", KeyType: "HASH"},  //Partition key
- { AttributeName: "title", KeyType: "RANGE" }  //Sort key
- ],
- AttributeDefinitions: [
- { AttributeName: "year", AttributeType: "N" },
- { AttributeName: "title", AttributeType: "S" }
- ],
- ProvisionedThroughput: {
- ReadCapacityUnits: 10,
- WriteCapacityUnits: 10
- }
- };
-
- dynamodb.createTable(params, function(err, data) {
- if (err) {
- console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
- } else {
- console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
- }
- });
- */
-
-
 function exists(tablename, cb) {
     dynamodb.describeTable({TableName: tablename}, function (err, data) {
         if (err) {
+            console.log(err);
             cb(err.statusCode != 400);
         } else {
             //console.log(data);
@@ -118,12 +90,12 @@ exists('Memos', function (ex) {
         var params = {
             TableName: "Memos",
             KeySchema: [
-                {AttributeName: "title", KeyType: "HASH"},  //Partition key
-                {AttributeName: "created", KeyType: "RANGE"}  //Sort key
+                {AttributeName: "created", KeyType: "HASH"},  //Partition key
+                {AttributeName: "title", KeyType: "RANGE"}  //Sort key
             ],
             AttributeDefinitions: [
-                {AttributeName: "title", AttributeType: "S"},
-                {AttributeName: "created", AttributeType: "S"}
+                {AttributeName: "created", AttributeType: "N"},
+                {AttributeName: "title", AttributeType: "S"}
             ],
             ProvisionedThroughput: {
                 ReadCapacityUnits: 10,
@@ -143,42 +115,74 @@ exists('Memos', function (ex) {
 
 app.get('/', function (req, res) {
     var params = {
-        TableName: "Memos",
-        //ProjectionExpression: "#yr, title, info.rating",
-        //FilterExpression: "#yr between :start_yr and :end_yr",
-        //ExpressionAttributeNames: {
-        //    "#yr": "year",
-        //},
-        //ExpressionAttributeValues: {
-        //    ":start_yr": 1950,
-        //    ":end_yr": 1959
-        //}
+        TableName: 'Memos',
+        Limit: 15  // Limits the number of results per page
     };
 
-    docClient.scan(params, function (err, data) {
-        console.log("SCAN COMPLETE");
-        console.log(err);
-        res.end(JSON.stringify(data));
+    var memos = [];
+    docClient.scan(params).eachPage(function(err,data) {
+        if(err){
+            console.log(err);
+            res.end(JSON.stringify(err));
+        }else if (data){
+            for (var i = 0; i < data.Items.length; i++ ) {
+                memos.push(data.Items[i]);
+            }
+        }else{
+            console.log(JSON.stringify(memos));
+            res.render('index');
+        }
     });
-});
 
+});
 
 app.post('/', function (req, res) {
-
     var form = new formidable.IncomingForm();
 
-    form.parse(req, function (err, fileds, files) {
-        /*put({
-         title : "New Memo",
-         created : new Date().toISOString()
-         }, function (err, data) {
-         console.log("WRITING TO MEMO");
-         console.log(err);
-         console.log(data);
-         });*/
-    });
+    form.parse(req, function (err, fields, files) {
+        console.log("PARSING QUERY FORM");
+        console.log(fields);
 
+        var filter = '';
+        var filterValues = {};
+
+        if(fields.title){
+            filter += 'contains(title, :t)';
+            filterValues[':t'] = fields.title;
+        }
+
+        for (i in fields){
+            if(fields.hasOwnProperty(i) && fields[i] == 'tag'){//checkbox
+                var placeholder = ':tag' + Object.keys(filterValues).length;
+                filter += ' AND contains(tags,' + placeholder + ')';
+                filterValues[placeholder] = i;
+            }
+        }
+
+        var params = {
+            TableName: 'Memos',
+            Limit: 15,  // Limits the number of results per page
+            FilterExpression: filter,
+            ExpressionAttributeValues: filterValues
+        };
+
+        var memos = [];
+        docClient.scan(params).eachPage(function(err,data) {
+            if(err){
+                console.log(err);
+                res.end(JSON.stringify(err));
+            }else if (data){
+                for (var i = 0; i < data.Items.length; i++ ) {
+                    memos.push(data.Items[i]);
+                }
+            }else{
+                res.end(JSON.stringify(memos));
+                //res.render('index');
+            }
+        });
+    });
 });
+
 app.get('/upload', function (req, res) {
     res.render('upload');
 });
@@ -187,13 +191,24 @@ app.post('/upload', function (req, res) {
     var form = new formidable.IncomingForm();
 
     form.parse(req, function (err, fields, files) {
-
-        delete fields['SUBMIT'];
-        fields.created = new Date().toISOString();
-
+        console.log("PARSING UPLOAD FORM");
         console.log(fields);
 
-        put(fields, function (err, data) {
+        var item = {
+            title : fields.title.toLowerCase(),
+            created : Date.now(),
+            tags : []
+        };
+
+        for (i in fields){
+            if(fields.hasOwnProperty(i) && fields[i] == 'tag'){//checkbox
+                item.tags.push(i.toLowerCase()); //add tag field name in lowercase
+            }
+        }
+
+        console.log(JSON.stringify(fields));
+
+        put(item, function (err, data) {
             console.log("WRITING TO MEMO");
             console.log(err);
             console.log(data);
@@ -202,6 +217,15 @@ app.post('/upload', function (req, res) {
     });
 });
 
+/* DELETE
+dynamodb.deleteTable(params, function(err, data) {
+    if (err) {
+        console.error("Unable to delete table. Error JSON:", JSON.stringify(err, null, 2));
+    } else {
+        console.log("Deleted table. Table description JSON:", JSON.stringify(data, null, 2));
+    }
+});
+*/
 
 var port = process.env.PORT || 9900;
 console.log("app listening on PORT", port);

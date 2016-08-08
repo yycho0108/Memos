@@ -12,44 +12,32 @@ html(lang="en")
     head
         title Memos-Upload
 
+        link(rel="stylesheet" type="text/css" href="stylesheets/styles.css")
         script(src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js")
         script(lang="javascript").
 
-            function addRow() {
-
-                var tr = $("<tr>").addClass("form-row");
-
-                var field = $("<input type=text>");
-                var value = $("<input type=text>");
-
-                var btn = $('<button type="button">').text("Set").click(function () {
-                    var field_text = field.val();
-
-                    var field_p = $("<span>").text(field_text);
-                    field.replaceWith(field_p);
-
-                    value.attr('name', field_text);
-
-                    $(this).remove();
-                });
-
-                var field_div = $("<div>").append(field, btn);
-
-                var th = $("<th>").append(field_div);
-                var td = $("<td>").append(value);
-
-                var del = $('<button type="button">').text("Del").click(function(){
-                    tr.remove();
-                })
-
-                tr.append(th, td, del);
-                $("#add-row").before(tr);
-            }
-
             $(function () {
-
-            });
-
+                $("#add").click(function () {
+                    $("input.tag").each(function () {
+                        var $this = $(this);
+                        var val = $this.val();
+                        var tag = $('<div class="tag">');
+                        var check = $('<input type="checkbox" checked>')
+                                .attr("name", val)
+                                .val("tag");
+                        var text = $('<span>').text(val);
+                        var cancel = $('<button type="button" class="cancel">').click(function () {
+                            tag.remove();
+                        }).text('x');
+                        tag.append(check, text, cancel);
+                        $this.parent().replaceWith(tag);
+                    });
+                    var new_tag = $('<div class="tag">');
+                    var tag_text = $('<input type="text" class="tag"/>');
+                    new_tag.append(tag_text);
+                    $(this).before(new_tag);
+                });
+            })
 body
     div
         form(method="POST", enctype="multipart/form-data")
@@ -58,10 +46,18 @@ body
                     th
                         p='title'
                     td
-                        input(type='text' name='title')
-                tr(id='add-row')
-                    td(colspan=2)
-                        button(type="button", onclick="addRow()")='ADD ROW'
+                        input(type='text' name='title' required="required")
+                tr(class='form-row')
+                    th
+                        p='content'
+                    td
+                        textarea(rows=4 cols=50 name='content')
+                tr
+                    th
+                        p='tag'
+                    td(id="tags" style="float:left")
+                        div(class="add")
+                            button(id="add" type="button")='+'
                 tr(id='submit')
                     td(colspan=2)
                         input(type='submit',name='SUBMIT',value='Submit')
